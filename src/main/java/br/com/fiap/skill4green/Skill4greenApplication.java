@@ -11,5 +11,5 @@ public class Skill4greenApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(Skill4greenApplication.class, args);
 	}
-
+	
 }

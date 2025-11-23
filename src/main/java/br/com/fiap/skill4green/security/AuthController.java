@@ -1,11 +1,8 @@
 package br.com.fiap.skill4green.security;
 
-import lombok.RequiredArgsConstructor;
-
-import java.util.Map;
-
-import br.com.fiap.skill4green.security.AuthRequest;
-import br.com.fiap.skill4green.security.AuthResponse;
+import br.com.fiap.skill4green.dto.request.LoginRequest;
+import br.com.fiap.skill4green.dto.response.LoginResponse;
+import br.com.fiap.skill4green.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -14,10 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.extensions.Extension;
 import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,18 +25,16 @@ import org.springframework.web.bind.annotation.*;
 )
 public class AuthController {
 
-    private final AuthenticationManager authManager;
-    private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final AuthService authService;
 
     @Operation(
         summary = "Login",
-        description = "Autentica um usuário com email e senha e retorna um token JWT"
+        description = "Autentica um usuário com email e senha e retorna o ID e o token JWT"
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Login realizado com sucesso",
             content = @Content(mediaType = "application/json",
-                examples = @ExampleObject(value = "{ \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\" }")
+                examples = @ExampleObject(value = "{ \"id\": 1, \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\" }")
             )
         ),
         @ApiResponse(responseCode = "401", description = "Credenciais inválidas",
@@ -59,19 +52,13 @@ public class AuthController {
                 examples = @ExampleObject(value = "{ \"email\": \"admin@empresa.com\", \"senha\": \"admin123\" }")
             )
         )
-        @RequestBody AuthRequest request) {
+        @RequestBody LoginRequest request) {
         try {
-            authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSenha())
-            );
-
-            UserDetails user = userDetailsService.loadUserByUsername(request.getEmail());
-            String token = jwtService.generateToken(user);
-
-            return ResponseEntity.ok(new AuthResponse(token));
-        } catch (BadCredentialsException e) {
+            LoginResponse response = authService.autenticar(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("erro", "Usuário inexistente ou senha inválida"));
+                .body(java.util.Map.of("erro", "Usuário inexistente ou senha inválida"));
         }
     }
 }

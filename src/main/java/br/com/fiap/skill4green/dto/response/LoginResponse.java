@@ -8,6 +8,10 @@ import lombok.Data;
 @Builder
 public class LoginResponse {
 
-    @Schema(description = "Token JWT gerado após login", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+    @Schema(description = "ID do colaborador autenticado", example = "1")
+    private Long id;
+
+    @Schema(description = "Token JWT gerado após login", 
+            example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     private String token;
 }
